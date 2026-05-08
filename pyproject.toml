@@ -19,7 +19,7 @@ dependencies = [
     "pydantic>=2.0.0"
 ]
 
-# This makes your CLI command work
+# This makes the CLI command work
 [project.scripts]
 vitess-rag = "vitess_rag.__main__:main"
 
@@ -28,6 +28,6 @@ vitess-rag = "vitess_rag.__main__:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Tell hatch where your code lives
+# Telling hatch where my code lives
 [tool.hatch.build.targets.wheel]
 packages = ["src/vitess_rag"]
