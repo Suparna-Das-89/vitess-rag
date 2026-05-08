@@ -1,7 +1,0 @@
-<script>start("/Users/suparna/vitess-rag-agent/project/data/");</script>
-<script>onHasParentDirectory();</script>
-<script>addRow("filter.md","filter.md",0,10971,"10.7 kB",1777306936,"27/04/2026, 18:22:16");</script>
-<script>addRow("guide.md","guide.md",0,85989,"84.0 kB",1777306936,"27/04/2026, 18:22:16");</script>
-<script>addRow("monitor.md","monitor.md",0,47833,"46.7 kB",1777306936,"27/04/2026, 18:22:16");</script>
-<script>addRow("read_in.md","read_in.md",0,11202,"10.9 kB",1777306936,"27/04/2026, 18:22:16");</script>
-<script>addRow("writeout.md","writeout.md",0,9946,"9.7 kB",1777306936,"27/04/2026, 18:22:16");</script>
