@@ -31,7 +31,7 @@ def test_parse_table_chunks():
     assert table_chunks[0].row_fields["description"] == "Example option"
 
 
-def test_heading_metadata():
+def test_full_heading_hierarchy():
     md = """
 # Module A
 
@@ -39,11 +39,16 @@ def test_heading_metadata():
 
 ### Subsection C
 
+#### Subsubsection D
+
 Some content.
 """
 
     chunks = parse_markdown_document(md, source_file="test.md")
 
-    assert chunks[0].metadata.module == "Module A"
-    assert chunks[0].metadata.section == "Section B"
-    assert chunks[0].metadata.subsection == "Subsection C"
+    first = chunks[0]
+
+    assert first.metadata.module == "Module A"
+    assert first.metadata.section == "Section B"
+    assert first.metadata.subsection == "Subsection C"
+    assert first.metadata.subsubsection == "Subsubsection D"
