@@ -275,13 +275,13 @@ When multiple valid meanings exist for a command option, the retrieval layer gen
 Example:
 
 ```text
-`-z` is ambiguous in VITESS. It can mean different things depending on the module, for example:
+The option `-z` has different meanings depending on the specific VITESS module you are using. It generally refers to a **vertical position filter** (in cm):
 
-- Filter: lower bound of the filter range in vertical direction
-- Monitor: vertical position bounds, or in some cases wavelength range filtering
-- Writeout: vertical space range filter
+*   **Filter Module**: Sets the **minimum z** (lower bound of the filter range in the vertical direction).
+*   **Monitor Module**: Defines the **low and up bounds for the z-position** (minimal and maximal vertical position). *Note: In some contexts, it may also refer to wavelength bounds, but the primary definition is position.*
+*   **Writeout Module**: Specifies the **minimum and maximum Z position** to filter neutrons; only neutrons within this vertical space range are read.
 
-Which VITESS module are you asking about?
+Please specify which module you are using if you need a more precise definition.
 ```
 
 ---
