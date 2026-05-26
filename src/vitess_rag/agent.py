@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 from .tools import create_vitess_tools
 
@@ -33,8 +34,15 @@ VITESS_RESEARCH_AGENT_PROMPT = SystemMessage(
 
 
 def build_vitess_research_agent(collection, model: str | None = None):
+
+    agent_model = ChatOpenAI(
+        model=model or os.getenv("VITESS_AGENT_MODEL", "alias-large"),
+        base_url=os.getenv("BLABLADOR_BASE_URL"),
+        api_key=os.getenv("BLABLADOR_API_KEY"),
+    )
+
     return create_agent(
-        model=model or os.getenv("VITESS_AGENT_MODEL", "openai:gpt-5.4-mini"),
+        model=agent_model,
         tools=create_vitess_tools(collection),
         system_prompt=VITESS_RESEARCH_AGENT_PROMPT,
         name="vitess_research_agent",
