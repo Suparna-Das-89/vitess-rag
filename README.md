@@ -442,6 +442,9 @@ cd vitess-rag-package
 
 uv sync
 
+cp .env.example .env
+# add your own Blablador API key to .env
+
 uv run pytest
 
 uv run vitess-rag index
@@ -455,7 +458,7 @@ uv run vitess-rag ask "What does option -z mean?"
 * Python 3.10+
 * uv
 * ChromaDB
-* OpenAI-compatible embedding endpoint
+* Blablador/OpenAI-compatible API endpoint
 
 ---
 
