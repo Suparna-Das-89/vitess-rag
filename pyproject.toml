@@ -27,15 +27,6 @@ dev = [
   "ipython",
 ]
 
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-    "ipython",
-]
-
 # This makes the CLI command work
 [project.scripts]
 vitess-rag = "vitess_rag.__main__:main"
