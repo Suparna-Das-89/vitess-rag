@@ -4,6 +4,71 @@ Structure-aware RAG pipeline for VITESS documentation with semantic parsing, tab
 
 ---
 
+# Quick Start
+
+## 1. Clone the repository
+
+```bash
+git clone https://github.com/Suparna-Das-89/vitess-rag-package
+cd vitess-rag-package
+```
+
+## 2. Install dependencies
+
+```bash
+uv sync
+```
+
+This automatically:
+- creates the virtual environment
+- installs dependencies
+- installs the package
+
+---
+
+## 3. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```env
+BLABLADOR_API_KEY=your_api_key_here
+BLABLADOR_BASE_URL=https://api.helmholtz-blablador.fz-juelich.de/v1/
+VITESS_AGENT_MODEL=alias-large
+BLABLADOR_EMBEDDING_MODEL=text-embedding-ada-002
+```
+
+---
+
+## 4. Build the vector index
+
+```bash
+uv run vitess-rag index
+```
+
+Expected output:
+
+```text
+Indexed chunks: 379
+Collection count: 379
+```
+
+---
+
+## 5. Ask questions
+
+```bash
+uv run vitess-rag ask "What is guide ideal?"
+```
+
+Example queries:
+
+```bash
+uv run vitess-rag ask "What does option -z mean?"
+uv run vitess-rag ask "Explain filter2D"
+uv run vitess-rag ask "What are the neutron reflectivity properties of different mirror coatings?"
+```
+---
+
 # Overview
 
 `vitess-rag` is a retrieval-augmented generation system designed for technical VITESS documentation.
