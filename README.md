@@ -362,7 +362,8 @@ vitess-rag-package/
 ├── .env.example
 ├── .gitignore
 ├── README.md
-└── pyproject.toml
+├── pyproject.toml
+└── uv.lock
 ```
 
 ---
@@ -378,17 +379,6 @@ vitess-rag ask
 
 ---
 
-# Installation
-
-```bash
-git clone https://github.com/Suparna-Das-89/vitess-rag-package.git
-cd vitess-rag-package
-
-uv venv
-uv pip install -e ".[dev]"
-```
-
----
 
 # Environment Configuration
 
@@ -450,8 +440,7 @@ Verified from a clean clone:
 git clone https://github.com/Suparna-Das-89/vitess-rag-package.git
 cd vitess-rag-package
 
-uv venv
-uv pip install -e ".[dev]"
+uv sync
 
 uv run pytest
 
