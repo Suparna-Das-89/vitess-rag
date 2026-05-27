@@ -458,7 +458,7 @@ uv run vitess-rag ask "What does option -z mean?"
 * Python 3.10+
 * uv
 * ChromaDB
-* Blablador/OpenAI-compatible API endpoint
+* Blablador compatible API endpoint
 
 ---
 
