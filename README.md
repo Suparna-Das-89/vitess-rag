@@ -437,8 +437,8 @@ Current tests include:
 Verified from a clean clone:
 
 ```bash
-git clone https://github.com/Suparna-Das-89/vitess-rag-package.git
-cd vitess-rag-package
+git clone https://github.com/Suparna-Das-89/vitess-rag.git
+cd vitess-rag
 
 uv sync
 
