@@ -9,8 +9,8 @@ Structure-aware RAG pipeline for VITESS documentation with semantic parsing, tab
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/Suparna-Das-89/vitess-rag-package
-cd vitess-rag-package
+git clone https://github.com/Suparna-Das-89/vitess-rag
+cd vitess-rag
 ```
 
 ## 2. Install dependencies
