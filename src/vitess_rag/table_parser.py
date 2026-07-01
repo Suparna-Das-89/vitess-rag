@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from .text_utils import (
     clean_whitespace,
     looks_like_caption_text,
+    restore_inline_math,
     single_line,
     slugify,
     strip_markdown_keep_visible_text,
@@ -61,9 +62,22 @@ def is_table_separator_line(line: str) -> bool:
     return True
 
 
-def split_table_row(line: str) -> List[str]:
+def split_table_row(
+    line: str,
+    math_map: Optional[Dict[str, Dict[str, str]]] = None,
+) -> List[str]:
     cells = line.strip().strip("|").split("|")
-    return [single_line(strip_markdown_keep_visible_text(cell.strip())) for cell in cells]
+    out: List[str] = []
+
+    for cell in cells:
+        cleaned = strip_markdown_keep_visible_text(cell.strip())
+
+        if math_map is not None:
+            cleaned = restore_inline_math(cleaned, math_map)
+
+        out.append(single_line(cleaned))
+
+    return out
 
 
 def pad_row(row: List[str], width: int) -> List[str]:
@@ -111,6 +125,7 @@ def merge_header_rows(row1: List[str], row2: List[str]) -> List[str]:
 def parse_table_from_lines(
     lines: List[str],
     start_idx: int,
+    math_map: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Optional[Dict[str, object]]:
     if start_idx + 1 >= len(lines):
         return None
@@ -121,13 +136,13 @@ def parse_table_from_lines(
     if not is_separator_row(lines[start_idx + 1]):
         return None
 
-    header1 = split_table_row(lines[start_idx])
+    header1 = split_table_row(lines[start_idx], math_map=math_map)
     i = start_idx + 2
 
     header2 = None
 
     if i < len(lines) and is_table_line(lines[i]):
-        candidate = split_table_row(lines[i])
+        candidate = split_table_row(lines[i], math_map=math_map)
 
         if looks_like_second_header_row(candidate):
             header2 = candidate
@@ -140,7 +155,12 @@ def parse_table_from_lines(
 
     while i < len(lines) and is_table_line(lines[i]):
         if not is_separator_row(lines[i]):
-            rows.append(pad_row(split_table_row(lines[i]), width))
+            rows.append(
+                pad_row(
+                    split_table_row(lines[i], math_map=math_map),
+                    width,
+                )
+            )
         i += 1
 
     if not rows:
