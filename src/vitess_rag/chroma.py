@@ -137,7 +137,7 @@ def build_chunks_from_directory(
             md_text=md_text,
             source_file=md_file.name,
         )
-        print(md_file.name, len(chunks))
+        
         for chunk in chunks:
             chunk.content = chunk.content.replace("\n", " ").strip()
 
