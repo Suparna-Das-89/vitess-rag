@@ -48,8 +48,8 @@ uv run vitess-rag index
 Expected output:
 
 ```text
-Indexed chunks: 379
-Collection count: 379
+Indexed chunks: 384
+Collection count: 384
 ```
 
 ---
