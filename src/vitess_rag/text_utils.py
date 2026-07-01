@@ -1,8 +1,11 @@
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 ANCHOR_TAG_RE = re.compile(r'<a\s+id="([^"]+)"\s*>\s*</a>')
 MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+
+INLINE_EQ_RE = re.compile(r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)")
+MATH_PLACEHOLDER_RE = re.compile(r"@@MATH(?:INLINE|BLOCK)\d+@@")
 
 TABLE_CAPTION_HINT_RE = re.compile(
     r"(?:^table\b|following table|lists the parameters|lists the output|lists the example|lists the files)",
@@ -95,3 +98,81 @@ def unique_preserve_order(items: List[str]) -> List[str]:
             out.append(item)
 
     return out
+
+
+def replace_math_with_placeholders(
+    md_text: str,
+) -> Tuple[str, Dict[str, Dict[str, str]]]:
+    math_map: Dict[str, Dict[str, str]] = {}
+    counter = 1
+
+    def store(body: str, kind: str) -> str:
+        nonlocal counter
+
+        if kind == "inline":
+            placeholder = f"@@MATHINLINE{counter}@@"
+        else:
+            placeholder = f"@@MATHBLOCK{counter}@@"
+
+        math_map[placeholder] = {
+            "latex": body.strip(),
+            "kind": kind,
+        }
+
+        counter += 1
+        return placeholder
+
+    lines = md_text.splitlines()
+    rebuilt: List[str] = []
+    i = 0
+
+    while i < len(lines):
+        line = lines[i].strip()
+
+        if line in {"$$", "$"}:
+            delimiter = line
+            j = i + 1
+            body: List[str] = []
+
+            while j < len(lines) and lines[j].strip() != delimiter:
+                body.append(lines[j])
+                j += 1
+
+            if j < len(lines):
+                rebuilt.append(store("\n".join(body), "block"))
+                i = j + 1
+                continue
+
+        rebuilt.append(lines[i])
+        i += 1
+
+    text = "\n".join(rebuilt)
+
+    def repl_inline(match: re.Match) -> str:
+        return store(match.group(1), "inline")
+
+    text = INLINE_EQ_RE.sub(repl_inline, text)
+
+    return text, math_map
+
+
+def restore_inline_math(
+    text: str,
+    math_map: Dict[str, Dict[str, str]],
+) -> str:
+    for placeholder, payload in math_map.items():
+        if payload["kind"] == "inline":
+            text = text.replace(placeholder, f"${payload['latex']}$")
+        else:
+            text = text.replace(placeholder, payload["latex"])
+
+    return text
+
+
+def is_only_math_placeholder(text: str) -> Optional[str]:
+    text = text.strip()
+
+    if MATH_PLACEHOLDER_RE.fullmatch(text):
+        return text
+
+    return None
