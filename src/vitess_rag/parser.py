@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from markdown_it import MarkdownIt
 
@@ -17,8 +17,11 @@ from .table_parser import (
 from .text_utils import (
     clean_whitespace,
     extract_module_name,
+    is_only_math_placeholder,
     make_chunk_id,
     normalize_table_title,
+    replace_math_with_placeholders,
+    restore_inline_math,
     unique_preserve_order,
 )
 
@@ -249,7 +252,7 @@ class MarkdownChunkParser:
             if is_heading_line(stripped):
                 return False
 
-            return parse_table_from_lines(lines, i) is not None
+            return parse_table_from_lines(lines, i, math_map=None) is not None
 
         return False
 
@@ -292,6 +295,7 @@ class MarkdownChunkParser:
     def process_markdown_block(
         self,
         block_lines: List[str],
+        math_map: Dict[str, Dict[str, str]],
         original_lines: List[str],
         start_line_idx: int,
     ) -> None:
@@ -325,7 +329,17 @@ class MarkdownChunkParser:
 
             if tok.type == "paragraph_open":
                 if i + 1 < len(tokens) and tokens[i + 1].type == "inline":
-                    text_out, _, _, external_links = render_inline_token_text(tokens[i + 1])
+                    inline_token = tokens[i + 1]
+                    raw_text_placeholder = inline_token.content or ""
+                    only_math = is_only_math_placeholder(raw_text_placeholder.strip())
+
+                    if only_math:
+                        self.emit_equation(math_map[only_math]["latex"])
+                        i += 3
+                        continue
+
+                    text_out, _, _, external_links = render_inline_token_text(inline_token)
+                    text_out = restore_inline_math(text_out, math_map)
 
                     self.emit_text(
                         text_out,
@@ -357,7 +371,11 @@ class MarkdownChunkParser:
 
             i += 1
 
-    def parse_document(self, md_text: str) -> None:
+    def parse_document(
+        self,
+        md_text: str,
+        math_map: Dict[str, Dict[str, str]],
+    ) -> None:
         lines = md_text.splitlines()
         i = 0
         buffer: List[str] = []
@@ -369,6 +387,7 @@ class MarkdownChunkParser:
             if buffer:
                 self.process_markdown_block(
                     block_lines=buffer,
+                    math_map=math_map,
                     original_lines=lines,
                     start_line_idx=buffer_start_idx if buffer_start_idx is not None else 0,
                 )
@@ -379,7 +398,7 @@ class MarkdownChunkParser:
         while i < len(lines):
             line = lines[i]
 
-            parsed_table = parse_table_from_lines(lines, i)
+            parsed_table = parse_table_from_lines(lines, i, math_map=math_map)
 
             if parsed_table:
                 flush_buffer()
@@ -451,12 +470,13 @@ def parse_markdown_document(
     source_file: str = "unknown.md",
 ) -> List[BaseChunk]:
     md_text = md_text.replace("\ufeff", "")
+    md_text_math, math_map = replace_math_with_placeholders(md_text)
 
     parser = MarkdownChunkParser(
         source_file=source_file,
         max_text_chars=MAX_TEXT_CHARS,
     )
 
-    parser.parse_document(md_text)
+    parser.parse_document(md_text_math, math_map)
 
     return merge_adjacent_text_chunks(parser.chunks, max_chars=MAX_TEXT_CHARS)
