@@ -34,7 +34,7 @@ Create a `.env` file in the project root:
 BLABLADOR_API_KEY=your_api_key_here
 BLABLADOR_BASE_URL=https://api.helmholtz-blablador.fz-juelich.de/v1/
 VITESS_AGENT_MODEL=alias-large
-BLABLADOR_EMBEDDING_MODEL=text-embedding-ada-002
+BLABLADOR_EMBEDDING_MODEL=alias-embeddings
 ```
 
 ---
