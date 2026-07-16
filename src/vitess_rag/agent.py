@@ -2,7 +2,12 @@ import os
 
 from dotenv import load_dotenv
 from langchain.agents import create_agent
-from langchain.messages import AIMessage, HumanMessage, SystemMessage
+from langchain.messages import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_openai import ChatOpenAI
 
 from .tools import create_vitess_tools
@@ -49,7 +54,11 @@ def build_vitess_research_agent(collection, model: str | None = None):
     )
 
 
-def ask_hybrid_agent(query: str, collection, model: str | None = None) -> str:
+def ask_hybrid_agent(
+    query: str,
+    collection,
+    model: str | None = None,
+) -> str:
     agent = build_vitess_research_agent(
         collection=collection,
         model=model,
@@ -59,4 +68,93 @@ def ask_hybrid_agent(query: str, collection, model: str | None = None) -> str:
         {"messages": [HumanMessage(content=query)]}
     )
 
-    return result["messages"][-1].content
+    messages = result.get("messages", [])
+
+    # Normal case: the agent generated a final textual answer.
+    for message in reversed(messages):
+        if not isinstance(message, AIMessage):
+            continue
+
+        content = message.content
+
+        # Ignore AI messages that only contain tool calls.
+        if message.tool_calls:
+            continue
+
+        if isinstance(content, str) and content.strip():
+            return content.strip()
+
+    # Fallback case: retrieval succeeded, but the agent produced no final text.
+    retrieved_context: list[str] = []
+
+    for message in messages:
+        if not isinstance(message, ToolMessage):
+            continue
+
+        content = message.content
+
+        if isinstance(content, str) and content.strip():
+            retrieved_context.append(content.strip())
+
+    if not retrieved_context:
+        return (
+            "I could not retrieve enough information from the "
+            "VITESS documentation to answer this question reliably."
+        )
+
+    # Remove duplicate tool outputs while preserving their order.
+    unique_context: list[str] = []
+    seen: set[str] = set()
+
+    for context_block in retrieved_context:
+        if context_block in seen:
+            continue
+
+        seen.add(context_block)
+        unique_context.append(context_block)
+
+    context = "\n\n".join(unique_context)
+
+    # Prevent excessively large fallback prompts.
+    max_context_chars = 30000
+
+    if len(context) > max_context_chars:
+        context = context[:max_context_chars]
+
+    answer_model = ChatOpenAI(
+        model=model or os.getenv("VITESS_AGENT_MODEL", "alias-large"),
+        base_url=os.getenv("BLABLADOR_BASE_URL"),
+        api_key=os.getenv("BLABLADOR_API_KEY"),
+    )
+
+    fallback_response = answer_model.invoke(
+        [
+            SystemMessage(
+                content=(
+                    "You answer questions about VITESS documentation. "
+                    "Use only the retrieved documentation supplied below. "
+                    "Do not add information from memory or outside knowledge. "
+                    "If the documentation does not fully support an answer, "
+                    "state the limitation clearly. "
+                    "Provide a clear and concise technical answer."
+                )
+            ),
+            HumanMessage(
+                content=(
+                    f"User question:\n{query}\n\n"
+                    "Retrieved VITESS documentation:\n"
+                    f"{context}"
+                )
+            ),
+        ]
+    )
+
+    fallback_content = fallback_response.content
+
+    if isinstance(fallback_content, str) and fallback_content.strip():
+        return fallback_content.strip()
+
+    return (
+        "The relevant VITESS documentation was retrieved, "
+        "but no final textual answer could be generated."
+    )

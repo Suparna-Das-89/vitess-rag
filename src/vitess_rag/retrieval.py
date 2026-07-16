@@ -120,30 +120,51 @@ def rerank_results(query: str, docs, metas):
     return scored
 
 
-def format_ambiguous_matches(target_option: str, exact_matches, max_items: int = 5) -> str:
-    lines = [f"I found multiple meanings for **{target_option}** in different modules:\n"]
+def format_ambiguous_matches(
+    target_option: str,
+    exact_matches,
+    max_items: int = 10,
+) -> str:
+    lines = [
+        f"The option **{target_option}** is used in multiple places, "
+        "so its meaning depends on the VITESS module:\n"
+    ]
 
     seen = set()
     count = 0
 
     for _, meta, _ in exact_matches:
         module = meta.get("module", "") or "Unknown module"
-        parameter = meta.get("row_parameter_unit", "") or "Unknown parameter"
-        description = meta.get("row_description", "") or "No description available."
+        parameter = (
+            meta.get("row_parameter_unit", "")
+            or "Unknown parameter"
+        )
+        description = (
+            meta.get("row_description", "")
+            or "No description available."
+        )
 
         key = (module, parameter, description)
+
         if key in seen:
             continue
 
         seen.add(key)
 
-        lines.append(f"- **{module}**: **{parameter}** — {description}")
+        lines.append(
+            f"- **{module}**: **{parameter}** — {description}"
+        )
+
         count += 1
 
         if count >= max_items:
             break
 
-    lines.append("\nWhich module do you mean?")
+    lines.append(
+        f"\nPlease specify the module for **{target_option}** "
+        "so I can give the precise definition."
+    )
+
     return "\n".join(lines)
 
 
