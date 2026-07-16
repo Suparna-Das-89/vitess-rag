@@ -55,23 +55,8 @@ def ask_hybrid_agent(query: str, collection, model: str | None = None) -> str:
         model=model,
     )
 
-    for _ in range(2):
-        result = agent.invoke(
-            {"messages": [HumanMessage(content=query)]}
-        )
-
-        messages = result.get("messages", [])
-
-        for message in reversed(messages):
-            if not isinstance(message, AIMessage):
-                continue
-
-            content = message.content
-
-            if isinstance(content, str) and content.strip():
-                return content.strip()
-
-    return (
-        "The agent retrieved documentation but did not generate "
-        "a final textual answer."
+    result = agent.invoke(
+        {"messages": [HumanMessage(content=query)]}
     )
+
+    return result["messages"][-1].content
