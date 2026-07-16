@@ -49,6 +49,8 @@ def build_vitess_research_agent(collection, model: str | None = None):
     )
 
 
+
+
 def ask_hybrid_agent(query: str, collection, model: str | None = None) -> str:
     agent = build_vitess_research_agent(
         collection=collection,
@@ -58,5 +60,21 @@ def ask_hybrid_agent(query: str, collection, model: str | None = None) -> str:
     result = agent.invoke(
         {"messages": [HumanMessage(content=query)]}
     )
+
+    print("\n========== AGENT TRACE ==========\n")
+
+    for i, message in enumerate(result["messages"]):
+        print(f"\n----- Message {i} -----")
+        print(type(message).__name__)
+
+        if hasattr(message, "tool_calls") and message.tool_calls:
+            print("Tool calls:")
+            for tool_call in message.tool_calls:
+                print(tool_call)
+
+        print("Content:")
+        print(message.content)
+
+    print("\n========== END TRACE ==========\n")
 
     return result["messages"][-1].content
