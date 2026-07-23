@@ -66,6 +66,78 @@ def test_rerank_results_boosts_exact_command_option():
     assert ranked[0][1]["row_command_option"] == "-L"
 
 
+def test_rerank_results_recognizes_combined_command_options():
+    docs = [
+        "General parameter",
+        "Combined command options",
+    ]
+
+    metas = [
+        {
+            "module": "Other",
+            "section": "",
+            "subsection": "",
+            "subsubsection": "",
+            "source_file": "other.md",
+            "path": "Other",
+            "chunk_type": "table",
+            "row_command_option": "-A",
+        },
+        {
+            "module": "Filter",
+            "section": "",
+            "subsection": "",
+            "subsubsection": "",
+            "source_file": "filter.md",
+            "path": "Filter",
+            "chunk_type": "table",
+            "row_command_option": "-J / -L",
+        },
+    ]
+
+    ranked = rerank_results("what does -L mean?", docs, metas)
+
+    assert ranked[0][1]["row_command_option"] == "-J / -L"
+
+
+def test_rerank_results_prefers_matching_module():
+    docs = [
+        "Monitor definition of option -L",
+        "Filter definition of option -L",
+    ]
+
+    metas = [
+        {
+            "module": "Monitor",
+            "section": "Parameters",
+            "subsection": "",
+            "subsubsection": "",
+            "source_file": "monitor.md",
+            "path": "Monitor > Parameters",
+            "chunk_type": "table",
+            "row_command_option": "-L",
+        },
+        {
+            "module": "Filter",
+            "section": "Parameters",
+            "subsection": "",
+            "subsubsection": "",
+            "source_file": "filter.md",
+            "path": "Filter > Parameters",
+            "chunk_type": "table",
+            "row_command_option": "-L",
+        },
+    ]
+
+    ranked = rerank_results(
+        "what does -L mean in the filter module?",
+        docs,
+        metas,
+    )
+
+    assert ranked[0][1]["module"] == "Filter"
+
+
 def test_detect_ambiguity_for_same_option_in_multiple_modules():
     ranked = [
         (
@@ -95,6 +167,48 @@ def test_detect_ambiguity_for_same_option_in_multiple_modules():
     assert ambiguity is not None
     assert "Module A" in ambiguity
     assert "Module B" in ambiguity
+
+
+def test_detect_ambiguity_returns_none_when_module_is_specified():
+    ranked = [
+        (
+            100,
+            {
+                "module": "Filter",
+                "section": "",
+                "subsection": "",
+                "subsubsection": "",
+                "source_file": "filter.md",
+                "path": "Filter",
+                "row_command_option": "-L",
+                "row_parameter_unit": "filter parameter",
+                "row_description": "Filter description",
+            },
+            "Filter documentation",
+        ),
+        (
+            90,
+            {
+                "module": "Monitor",
+                "section": "",
+                "subsection": "",
+                "subsubsection": "",
+                "source_file": "monitor.md",
+                "path": "Monitor",
+                "row_command_option": "-L",
+                "row_parameter_unit": "monitor parameter",
+                "row_description": "Monitor description",
+            },
+            "Monitor documentation",
+        ),
+    ]
+
+    ambiguity = detect_ambiguity(
+        "what does -L mean in the filter module?",
+        ranked,
+    )
+
+    assert ambiguity is None
 
 
 def test_build_context_contains_metadata_and_content():
