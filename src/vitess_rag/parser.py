@@ -2,6 +2,7 @@ import re
 from typing import List, Optional
 
 from markdown_it import MarkdownIt
+from mdit_py_plugins.dollarmath import dollarmath_plugin
 
 from .markdown_rendering import extract_anchor_ids, render_inline_token_text
 from .models import BaseChunk, EquationChunk, Metadata, TableChunk, TextChunk
@@ -34,7 +35,13 @@ class MarkdownChunkParser:
     ):
         self.source_file = source_file
         self.max_text_chars = max_text_chars
-        self.md = MarkdownIt("commonmark", {"html": True})
+        # Only `$$ ... $$` blocks become equation chunks. Inline `$...$` stays
+        # part of its text chunk, so the inline math rule is switched off.
+        self.md = (
+            MarkdownIt("commonmark", {"html": True})
+            .use(dollarmath_plugin, allow_labels=False)
+            .disable("math_inline")
+        )
 
         self.chunks: List[BaseChunk] = []
         self.chunk_index = 0
@@ -342,6 +349,11 @@ class MarkdownChunkParser:
                 if anchors:
                     i += 1
                     continue
+
+            if tok.type == "math_block":
+                self.emit_equation(tok.content or "")
+                i += 1
+                continue
 
             if tok.type in {"fence", "code_block"}:
                 code_text = tok.content or ""
