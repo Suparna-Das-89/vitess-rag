@@ -105,3 +105,45 @@ print("hello")
     assert chunks[0].chunk_type == "text"
     assert chunks[0].metadata.is_code_block is True
     assert 'print("hello")' in chunks[0].content
+
+
+def test_display_math_block_is_an_equation_chunk():
+    md = r"""
+# VITESS Module Capture Flux
+
+## Capture flux
+
+One does not get the real flux but the integral
+
+$$
+\Phi_{capture} = \int \phi(\lambda) \frac{\lambda}{\lambda_{ref}} d\lambda
+$$
+
+This integral is calculated in the module.
+"""
+
+    chunks = parse_markdown_document(md, source_file="capture_flux.md")
+
+    assert [chunk.chunk_type for chunk in chunks] == ["text", "equation", "text"]
+    equation = chunks[1]
+    assert equation.content == (
+        r"\Phi_{capture} = \int \phi(\lambda) \frac{\lambda}{\lambda_{ref}} d\lambda"
+    )
+    assert equation.metadata.module == "VITESS Module Capture Flux"
+    assert equation.metadata.section == "Capture flux"
+    assert chunks[0].content == "One does not get the real flux but the integral"
+    assert chunks[2].content == "This integral is calculated in the module."
+
+
+def test_inline_math_stays_in_its_text_chunk():
+    md = """
+# VITESS Module Guide
+
+Each plane is described by $ax + by + cz + d = 0$ as an equation of first order.
+"""
+
+    chunks = parse_markdown_document(md, source_file="guide.md")
+
+    assert len(chunks) == 1
+    assert chunks[0].chunk_type == "text"
+    assert "$ax + by + cz + d = 0$" in chunks[0].content

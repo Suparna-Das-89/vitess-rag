@@ -14,7 +14,9 @@ class BlabladorEmbeddingFunction(EmbeddingFunction[Documents]):
         api_key: str | None = None,
         base_url: str | None = None,
     ):
-        self.model_name = model_name or os.getenv("BLABLADOR_EMBEDDING_MODEL", "alias-embeddings")
+        self.model_name = model_name or os.getenv(
+            "BLABLADOR_EMBEDDING_MODEL", "alias-qwen3-8b-embeddings"
+        )
         self.api_key = api_key or os.getenv("BLABLADOR_API_KEY")
         self.base_url = base_url or os.getenv("BLABLADOR_BASE_URL")
 
@@ -43,5 +45,5 @@ class BlabladorEmbeddingFunction(EmbeddingFunction[Documents]):
     @staticmethod
     def build_from_config(config: dict) -> "BlabladorEmbeddingFunction":
         return BlabladorEmbeddingFunction(
-            model_name=config.get("model_name", "alias-embeddings")
+            model_name=config.get("model_name", "alias-qwen3-8b-embeddings")
         )
