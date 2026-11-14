@@ -123,6 +123,9 @@ The VITESS-RAG system consists of two main pipelines:
 
 <img width="1942" height="1158" alt="vitess-rag-architecture" src="https://github.com/user-attachments/assets/b87a0adf-0360-4dc2-b835-fa04ac76afd4" />
 
+**Diagram attribution:** Designed and developed primarily by **Suparna Das**, with guidance and contributions from **Dr. Ihsan Ahmad** (Forschungszentrum Jülich).
+
+
 ---
 
 # Core Components
