@@ -115,29 +115,13 @@ Traditional vector search often fails on these queries because embedding similar
 
 # Architecture
 
-```text
-HTML / Markdown Documentation
-              ↓
-Structure-Aware Parser
-              ↓
-Semantic Chunk Generation
-              ↓
-Metadata Enrichment
-              ↓
-Embedding Pipeline
-              ↓
-ChromaDB Vector Index
-              ↓
-Candidate Retrieval
-              ↓
-Metadata-Guided Reranking
-              ↓
-Ambiguity Detection
-              ↓
-Context Builder
-              ↓
-LLM / Agent Response
-```
+The VITESS-RAG system consists of two main pipelines:
+
+1. **Documentation Processing and Indexing Pipeline:** 
+
+2. **Agent-Based Question Answering Pipeline:**
+
+<img width="1942" height="1158" alt="vitess-rag-architecture" src="https://github.com/user-attachments/assets/b87a0adf-0360-4dc2-b835-fa04ac76afd4" />
 
 ---
 
